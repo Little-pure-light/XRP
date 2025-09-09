@@ -113,7 +113,7 @@ class ArbitrageEngine:
                 time.sleep(10)  # Wait before retrying on error
     
     def _detect_arbitrage_opportunity(self, config):
-        """Detect arbitrage opportunities"""
+        """Detect directional arbitrage opportunities with improved logic"""
         try:
             # Get current prices
             prices = self.price_monitor.get_current_prices()
@@ -123,37 +123,67 @@ class ArbitrageEngine:
             
             usdt_price = prices['XRP/USDT']['price']
             usdc_price = prices['XRP/USDC']['price']
+            usdt_volume = prices['XRP/USDT']['volume']
+            usdc_volume = prices['XRP/USDC']['volume']
             
-            # Calculate spread
-            spread = abs(usdt_price - usdc_price)
-            spread_percentage = (spread / min(usdt_price, usdc_price)) * 100
-            
-            # Check if spread exceeds threshold
-            if spread_percentage < config.spread_threshold * 100:
-                return None
-            
-            # Determine trade direction
+            # IMPROVED DIRECTIONAL ARBITRAGE LOGIC
+            # Calculate percentage spread (not just absolute)
             if usdt_price > usdc_price:
-                # Sell XRP for USDT, buy XRP with USDC
+                # USDT is higher, sell XRP/USDT, buy XRP/USDC
+                spread_percentage = ((usdt_price - usdc_price) / usdc_price) * 100
                 opportunity_type = 'sell_usdt_buy_usdc'
                 sell_pair = 'XRP/USDT'
                 buy_pair = 'XRP/USDC'
                 sell_price = usdt_price
                 buy_price = usdc_price
+                higher_price = usdt_price
+                lower_price = usdc_price
             else:
-                # Sell XRP for USDC, buy XRP with USDT
+                # USDC is higher, sell XRP/USDC, buy XRP/USDT  
+                spread_percentage = ((usdc_price - usdt_price) / usdt_price) * 100
                 opportunity_type = 'sell_usdc_buy_usdt'
                 sell_pair = 'XRP/USDC'
                 buy_pair = 'XRP/USDT'
                 sell_price = usdc_price
                 buy_price = usdt_price
+                higher_price = usdc_price
+                lower_price = usdt_price
             
-            # Calculate safe trade amount
+            spread = higher_price - lower_price
+            
+            # Enhanced threshold check with minimum profitable spread
+            minimum_profitable_spread = 0.08  # 0.08% minimum after fees
+            if spread_percentage < max(config.spread_threshold * 100, minimum_profitable_spread):
+                return None
+            
+            # Volume validation - ensure sufficient liquidity
+            min_volume_24h = 1000.0  # Minimum 24h volume
+            if usdt_volume < min_volume_24h or usdc_volume < min_volume_24h:
+                self.logger.debug(f"Insufficient volume: USDT={usdt_volume}, USDC={usdc_volume}")
+                return None
+            
+            # Calculate safe trade amount with volatility consideration
             max_safe_amount = self.risk_controller.calculate_max_safe_trade_amount(config)
-            trade_amount = min(config.trade_amount, max_safe_amount)
+            
+            # Adjust trade amount based on spread size (larger spreads allow larger trades)
+            spread_multiplier = min(2.0, spread_percentage / 0.3)  # Scale up to 2x for large spreads
+            adjusted_base_amount = config.trade_amount * spread_multiplier
+            
+            trade_amount = min(adjusted_base_amount, max_safe_amount)
             
             if trade_amount <= 0:
                 self.logger.warning("No safe trade amount available")
+                return None
+            
+            # Enhanced profit estimation with fee consideration
+            gross_profit = trade_amount * spread
+            estimated_fees = trade_amount * (sell_price + buy_price) * 0.0006  # 0.06% taker fee both sides
+            estimated_net_profit = gross_profit - estimated_fees
+            
+            # Minimum profit threshold
+            min_profit_threshold = 0.10  # Minimum $0.10 profit
+            if estimated_net_profit < min_profit_threshold:
+                self.logger.debug(f"Profit too small: {estimated_net_profit:.4f} < {min_profit_threshold}")
                 return None
             
             opportunity = {
@@ -167,7 +197,12 @@ class ArbitrageEngine:
                 'sell_price': sell_price,
                 'buy_price': buy_price,
                 'amount': trade_amount,
-                'estimated_profit': trade_amount * spread
+                'estimated_profit': estimated_net_profit,
+                'gross_profit': gross_profit,
+                'estimated_fees': estimated_fees,
+                'volume_usdt': usdt_volume,
+                'volume_usdc': usdc_volume,
+                'spread_multiplier': spread_multiplier
             }
             
             return opportunity
