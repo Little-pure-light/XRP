@@ -231,9 +231,9 @@ class ArbitrageEngine:
             db.session.rollback()
     
     def _execute_opportunity(self, opportunity, config):
-        """Execute arbitrage opportunity with risk checks"""
+        """Execute arbitrage opportunity with enhanced risk checks"""
         try:
-            # Perform comprehensive risk check
+            # Perform comprehensive risk check with volatility adjustment
             risk_check = self.risk_controller.check_trade_risk(opportunity, config)
             
             if not risk_check['safe']:
@@ -245,32 +245,70 @@ class ArbitrageEngine:
                 )
                 return
             
+            # Use the volatility-adjusted amount from risk check
+            adjusted_amount = risk_check['adjusted_amount']
+            if adjusted_amount != opportunity['amount']:
+                self.logger.info(f"Position size adjusted for volatility: {opportunity['amount']:.2f} -> {adjusted_amount:.2f} XRP")
+                opportunity['amount'] = adjusted_amount
+            
             # Execute the arbitrage trade
-            self.logger.info(f"Executing arbitrage trade: {opportunity['amount']} XRP")
+            self.logger.info(f"Executing ATOMIC arbitrage trade: {opportunity['amount']} XRP")
             
             trade_result = self.trade_executor.execute_arbitrage_trade(opportunity)
             
             if trade_result:
+                # Track volume and profit/loss
+                trade_value_usd = opportunity['amount'] * opportunity['sell_price']
+                profit_loss = trade_result.get('profit_loss', 0)
+                
+                self.volume_tracker.track_trade_volume(trade_value_usd, profit_loss)
+                
                 # Mark opportunity as executed
                 self._mark_opportunity_executed(opportunity)
                 
-                profit_loss = trade_result['profit_loss'] if 'profit_loss' in trade_result else 0
-                self.logger.info(f"Arbitrage trade completed with P&L: {profit_loss:.4f}")
+                self.logger.info(f"ATOMIC arbitrage completed with P&L: {profit_loss:.4f}")
                 
                 self.data_logger.log_trade({
-                    'type': 'arbitrage',
+                    'type': 'atomic_arbitrage',
                     'amount': opportunity['amount'],
                     'profit_loss': profit_loss,
-                    'spread': opportunity['spread_percentage']
+                    'spread': opportunity['spread_percentage'],
+                    'execution_type': trade_result.get('execution_type', 'atomic'),
+                    'slippage': trade_result.get('slippage', {})
                 }, 'completed')
                 
+                # Check if we need to activate any circuit breakers based on performance
+                if profit_loss < -50:  # Large single trade loss
+                    self.risk_controller.volume_tracker.activate_circuit_breaker(
+                        'large_loss',
+                        f'Large single trade loss: ${abs(profit_loss):.2f}',
+                        abs(profit_loss),
+                        50.0
+                    )
+                
             else:
-                self.logger.error("Arbitrage trade execution failed")
-                self.data_logger.log_error("Arbitrage trade execution failed", "ArbitrageEngine")
+                self.logger.error("ATOMIC arbitrage trade execution failed")
+                self.data_logger.log_error("ATOMIC arbitrage trade execution failed", "ArbitrageEngine")
+                
+                # Track failed execution (might indicate system issues)
+                self.risk_controller.volume_tracker.activate_circuit_breaker(
+                    'execution_failure',
+                    'Multiple trade execution failures detected',
+                    None,
+                    None
+                )
             
         except Exception as e:
             self.logger.error(f"Error executing opportunity: {e}")
             self.data_logger.log_error(f"Opportunity execution error: {e}", "ArbitrageEngine", e)
+            
+            # Activate circuit breaker for system errors
+            self.risk_controller.volume_tracker.activate_circuit_breaker(
+                'system_error',
+                f'System error in arbitrage execution: {e}',
+                None,
+                None
+            )
     
     def _mark_opportunity_executed(self, opportunity):
         """Mark opportunity as executed in database"""
