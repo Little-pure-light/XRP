@@ -23,9 +23,9 @@ class XRPTradingGUI:
         
         # 服务器地址列表（自动检测）
         self.server_urls = [
-            "https://xrp-arbitrage-trading-system.replit.app",
-            "http://localhost:5000",
             "http://127.0.0.1:5000",
+            "http://localhost:5000",
+            "https://xrp-arbitrage-trading-system.replit.app",
         ]
         self.current_url = None
         self.monitoring = False
