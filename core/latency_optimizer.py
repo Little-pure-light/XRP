@@ -204,9 +204,9 @@ class LatencyOptimizer:
         except Exception as e:
             self.logger.error(f"记录执行时间失败: {e}")
     
-    @measure_execution_time("fast_order_execution")
     def execute_order_fast(self, order_params: Dict) -> Dict:
         """超快速订单执行"""
+        start_time = time.perf_counter()
         try:
             # 使用关键执行器
             future = self.critical_executor.submit(self._internal_order_execution, order_params)
@@ -219,6 +219,10 @@ class LatencyOptimizer:
         except Exception as e:
             self.logger.error(f"快速订单执行失败: {e}")
             return {'success': False, 'error': str(e)}
+        finally:
+            # 记录执行时间
+            execution_time = (time.perf_counter() - start_time) * 1000
+            self._record_execution_time("fast_order_execution", execution_time)
     
     def _internal_order_execution(self, order_params: Dict) -> Dict:
         """内部订单执行逻辑"""
@@ -285,9 +289,9 @@ class LatencyOptimizer:
             self.logger.error(f"优化订单提交失败: {e}")
             return {}
     
-    @measure_execution_time("fast_price_fetch")
     def get_prices_fast(self, symbols: List[str]) -> Dict:
         """超快速价格获取"""
+        start_time = time.perf_counter()
         try:
             # 并行获取价格
             with ThreadPoolExecutor(max_workers=len(symbols)) as executor:
@@ -311,6 +315,10 @@ class LatencyOptimizer:
         except Exception as e:
             self.logger.error(f"快速价格获取失败: {e}")
             return {}
+        finally:
+            # 记录执行时间
+            execution_time = (time.perf_counter() - start_time) * 1000
+            self._record_execution_time("fast_price_fetch", execution_time)
     
     def _fetch_single_price(self, symbol: str) -> Dict:
         """获取单个价格"""
@@ -343,9 +351,9 @@ class LatencyOptimizer:
             self.logger.error(f"获取{symbol}价格失败: {e}")
             return {}
     
-    @measure_execution_time("spread_calc")
     def calculate_spread_fast(self, usdt_price: float, usdc_price: float) -> Dict:
         """超快速价差计算"""
+        start_time = time.perf_counter()
         try:
             # 预计算的优化
             if usdt_price <= 0 or usdc_price <= 0:
@@ -367,6 +375,10 @@ class LatencyOptimizer:
         except Exception as e:
             self.logger.error(f"快速价差计算失败: {e}")
             return {'spread': 0, 'spread_pct': 0, 'valid': False}
+        finally:
+            # 记录执行时间
+            execution_time = (time.perf_counter() - start_time) * 1000
+            self._record_execution_time("spread_calc", execution_time)
     
     def optimize_cache_usage(self):
         """优化缓存使用"""
