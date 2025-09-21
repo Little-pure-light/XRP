@@ -28,6 +28,7 @@ class TradingControlCenter:
         # 服务器进程
         self.server_process = None
         self.monitoring = False
+        self.current_url = "http://localhost:5000"  # 默认URL
         
         # 创建界面
         self.create_interface()
@@ -230,16 +231,21 @@ class TradingControlCenter:
     def open_browser(self):
         """打开网页控制面板"""
         try:
-            url = "http://localhost:5000"
-            webbrowser.open(url)
-            self.log_message(f"🌐 已打开控制面板：{url}")
+            # 先检查可用的URL
+            self.check_system_health()
+            
+            if self.current_url:
+                webbrowser.open(self.current_url)
+            else:
+                self.log_message("❌ 无法找到可用的服务器地址")
+            self.log_message(f"🌐 已打开控制面板：{self.current_url}")
         except Exception as e:
             self.log_message(f"❌ 打开网页失败：{str(e)}")
     
     def open_monitor(self):
         """打开交易监控页面"""
         try:
-            url = "http://localhost:5000/monitor"
+            url = f"{self.current_url}/monitor"
             webbrowser.open(url)
             self.log_message(f"📊 已打开交易监控：{url}")
         except Exception as e:
@@ -248,7 +254,7 @@ class TradingControlCenter:
     def open_config(self):
         """打开系统设置页面"""
         try:
-            url = "http://localhost:5000/config"
+            url = f"{self.current_url}/config"
             webbrowser.open(url)
             self.log_message(f"⚙️ 已打开系统设置：{url}")
         except Exception as e:
@@ -262,11 +268,31 @@ class TradingControlCenter:
     def check_system_health(self):
         """检查系统健康状态"""
         try:
-            # 检查服务器是否响应
-            response = requests.get("http://localhost:5000/api/prices", timeout=5)
-            if response.status_code == 200:
+            # 检查服务器是否响应 (支持云端和本地)
+            base_urls = [
+                "https://xrp-arbitrage-trading-system.replit.app",
+                "http://localhost:5000",
+                "http://127.0.0.1:5000"
+            ]
+            
+            response = None
+            working_url = None
+            
+            for url in base_urls:
+                try:
+                    response = requests.get(f"{url}/api/prices", timeout=5)
+                    if response.status_code == 200:
+                        working_url = url
+                        break
+                except:
+                    continue
+            
+            if response and response.status_code == 200:
                 data = response.json()
-                self.log_message("✅ 服务器响应正常")
+                self.log_message(f"✅ 服务器响应正常: {working_url}")
+                
+                # 更新访问URL
+                self.current_url = working_url
                 
                 # 检查价格数据
                 if 'XRP/USDT' in data and 'XRP/USDC' in data:
@@ -288,6 +314,9 @@ class TradingControlCenter:
             self.log_message("💡 请先点击'启动交易系统'")
         except Exception as e:
             self.log_message(f"❌ 检查失败：{str(e)}")
+            
+        if not working_url:
+            self.log_message("⚠️ 所有服务器地址都无法访问")
     
     def start_monitoring(self):
         """启动后台监控"""
