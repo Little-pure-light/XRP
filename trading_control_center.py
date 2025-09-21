@@ -236,9 +236,9 @@ class TradingControlCenter:
             
             if self.current_url:
                 webbrowser.open(self.current_url)
+                self.log_message(f"🌐 已打开控制面板：{self.current_url}")
             else:
                 self.log_message("❌ 无法找到可用的服务器地址")
-            self.log_message(f"🌐 已打开控制面板：{self.current_url}")
         except Exception as e:
             self.log_message(f"❌ 打开网页失败：{str(e)}")
     
@@ -287,7 +287,7 @@ class TradingControlCenter:
                 except:
                     continue
             
-            if response and response.status_code == 200:
+            if response and hasattr(response, 'status_code') and response.status_code == 200:
                 data = response.json()
                 self.log_message(f"✅ 服务器响应正常: {working_url}")
                 
@@ -306,7 +306,7 @@ class TradingControlCenter:
                     self.log_message(f"💰 价差: {spread_pct:.3f}%")
                 else:
                     self.log_message("⚠️ 价格数据不完整")
-            else:
+            elif response:
                 self.log_message(f"⚠️ 服务器响应异常：{response.status_code}")
                 
         except requests.exceptions.ConnectionError:
@@ -315,7 +315,7 @@ class TradingControlCenter:
         except Exception as e:
             self.log_message(f"❌ 检查失败：{str(e)}")
             
-        if not working_url:
+        if 'working_url' in locals() and not working_url:
             self.log_message("⚠️ 所有服务器地址都无法访问")
     
     def start_monitoring(self):
