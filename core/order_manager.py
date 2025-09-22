@@ -63,16 +63,19 @@ class OrderManager:
     
     def _monitoring_loop(self):
         """监控循环 - 检查超时订单"""
+        from app import app
+        
         while self.monitoring_active:
             try:
-                # 检查超时订单
-                self._check_timeout_orders()
-                
-                # 更新订单状态
-                self._update_pending_orders()
-                
-                # 清理过期缓存
-                self._cleanup_cache()
+                with app.app_context():
+                    # 检查超时订单
+                    self._check_timeout_orders()
+                    
+                    # 更新订单状态
+                    self._update_pending_orders()
+                    
+                    # 清理过期缓存
+                    self._cleanup_cache()
                 
                 # 监控间隔
                 time.sleep(2)  # 每2秒检查一次
