@@ -9,6 +9,9 @@ from core.profit_analyzer import ProfitAnalyzer
 from core.config_manager import ConfigManager
 from business.arbitrage_engine import ArbitrageEngine
 import json
+import os
+import psutil
+from sqlalchemy import text
 
 # Initialize core modules (will be done lazily)
 price_monitor = None
@@ -36,6 +39,57 @@ def get_core_modules():
         arbitrage_engine = ArbitrageEngine()
     
     return price_monitor, balance_manager, trade_executor, profit_analyzer, config_manager, arbitrage_engine
+
+@app.route('/health')
+def health_check():
+    """Railway/production health check endpoint"""
+    try:
+        # Check database connectivity
+        db_status = "healthy"
+        try:
+            result = db.session.execute(text("SELECT 1"))
+            result.fetchone()
+        except Exception as e:
+            db_status = f"unhealthy: {str(e)}"
+        
+        # Check system resources (optimized for load balancers)
+        memory_usage = psutil.virtual_memory().percent
+        cpu_usage = psutil.cpu_percent(interval=None)  # Non-blocking
+        disk_usage = psutil.disk_usage('/').percent
+        
+        # Basic system health
+        health_data = {
+            "status": "healthy" if db_status == "healthy" else "degraded",
+            "timestamp": datetime.utcnow().isoformat(),
+            "version": "1.0.0",
+            "services": {
+                "database": db_status,
+                "price_monitor": "active",
+                "websocket": "active"
+            },
+            "metrics": {
+                "memory_usage_percent": memory_usage,
+                "cpu_usage_percent": cpu_usage,
+                "disk_usage_percent": disk_usage
+            },
+            "environment": os.environ.get("RAILWAY_ENVIRONMENT", "development")
+        }
+        
+        # Return appropriate HTTP status
+        status_code = 200 if health_data["status"] == "healthy" else 503
+        return jsonify(health_data), status_code
+        
+    except Exception as e:
+        return jsonify({
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }), 503
+
+@app.route('/health/simple')
+def simple_health():
+    """Simple health check for load balancers"""
+    return "OK", 200
 
 @app.route('/')
 def dashboard():
