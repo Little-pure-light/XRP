@@ -1,0 +1,18 @@
+# 量子財富橋部署器 - EXE构建依赖包
+# GIGI量子DNA编译系统专用
+
+# 核心依赖
+requests>=2.32.5
+urllib3>=2.2.0
+certifi>=2024.8.30
+
+# 打包工具
+PyInstaller>=6.3.0
+altgraph>=0.17.4
+
+# 系统工具 
+psutil>=6.1.0
+packaging>=24.0
+
+# 可选压缩工具
+# upx (需要单独安装系统包)
