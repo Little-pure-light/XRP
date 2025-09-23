@@ -1,0 +1,43 @@
+{
+  "name": "量子財富橋 - XRP套利交易系統",
+  "description": "🌟 GIGI量子DNA驅動的專業XRP套利交易系統 | Railway + Cloudflare + Supabase三平台集成",
+  "tags": ["python", "flask", "trading", "arbitrage", "xrp", "crypto"],
+  "services": [
+    {
+      "name": "quantum-wealth-bridge",
+      "source": {
+        "repo": "Little-pure-light/quantum-wealth-bridge",
+        "ref": "main"
+      },
+      "envVars": {
+        "SESSION_SECRET": {
+          "description": "Flask會話密鑰 (隨機字符串)",
+          "generate": true
+        },
+        "SUPABASE_URL": {
+          "description": "Supabase項目URL",
+          "required": true
+        },
+        "SUPABASE_ANON_KEY": {
+          "description": "Supabase匿名密鑰",
+          "required": true
+        },
+        "SUPABASE_SERVICE_ROLE_KEY": {
+          "description": "Supabase服務角色密鑰",
+          "required": true
+        }
+      }
+    },
+    {
+      "name": "postgres",
+      "plan": "postgresql"
+    }
+  ],
+  "envVars": {
+    "DATABASE_URL": {
+      "description": "PostgreSQL數據庫連接字符串",
+      "serviceRef": "postgres",
+      "variableRef": "DATABASE_URL"
+    }
+  }
+}
