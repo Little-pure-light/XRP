@@ -625,8 +625,8 @@ class QuantumOneClickDeployer:
     
     def _deploy_to_cloudflare_pages(self, build_dir, cf_token):
         """使用Wrangler部署到Cloudflare Pages"""
+        original_dir = os.getcwd()
         try:
-            original_dir = os.getcwd()
             os.chdir(build_dir)
             
             env = os.environ.copy()
