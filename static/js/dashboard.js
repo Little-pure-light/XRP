@@ -1,6 +1,6 @@
 // XRP Arbitrage Trading System - Dashboard JavaScript
 
-const response = await fetch('/api/prices');
+const response = await fetch(`${API_BASE_URL}/api/prices`);
 
 class TradingDashboard {
     constructor() {
@@ -138,7 +138,7 @@ class TradingDashboard {
     
     async updateBalances() {
         try {
-            const response = await fetch('/api/balances');
+            const response = await fetch(`${API_BASE_URL}/api/balances`);
             if (!response.ok) throw new Error('Failed to fetch balances');
             
             const data = await response.json();
@@ -200,7 +200,7 @@ class TradingDashboard {
     
     async updateTodayStats() {
         try {
-            const response = await fetch('/api/profit/stats');
+            const response = await fetch(`${API_BASE_URL}/api/profit/stats`);
             if (!response.ok) throw new Error('Failed to fetch stats');
             
             const data = await response.json();
@@ -247,7 +247,7 @@ class TradingDashboard {
     
     async updateRecentTrades() {
         try {
-            const response = await fetch('/api/trades/recent?limit=10');
+            const response = await fetch(`${API_BASE_URL}/api/trades/recent?limit=10`);
             if (!response.ok) throw new Error('Failed to fetch recent trades');
             
             const trades = await response.json();
@@ -298,7 +298,7 @@ class TradingDashboard {
     
     async updateSystemStatus() {
         try {
-            const response = await fetch('/api/system-status');
+            const response = await fetch(`${API_BASE_URL}/api/system-status`);
             if (!response.ok) throw new Error('Failed to fetch system status');
             
             const status = await response.json();
