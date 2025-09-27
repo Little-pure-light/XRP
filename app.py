@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import get_config
+from flask_cors import CORS
 
 # Configure logging based on environment
 config_class = get_config()
@@ -21,6 +22,7 @@ db = SQLAlchemy(model_class=Base)
 
 # Create the app
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": "https://xrpbot.pages.dev"}})
 
 # Load configuration
 config_obj = get_config()
