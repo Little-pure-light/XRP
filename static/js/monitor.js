@@ -72,7 +72,7 @@ class TradingMonitor {
     
     async updateTradingFeed() {
         try {
-            const response = await fetch('/api/trades/recent?limit=20');
+            const response = await fetch(`${API_BASE_URL}/api/trades/recent?limit=20`);
             if (!response.ok) throw new Error('Failed to fetch recent trades');
             
             const trades = await response.json();
@@ -185,7 +185,7 @@ class TradingMonitor {
     
     async updateAnalytics() {
         try {
-            const response = await fetch('/api/profit/stats');
+            const response = await fetch(`${API_BASE_URL}/api/profit/stats`);
             if (!response.ok) throw new Error('Failed to fetch analytics');
             
             const stats = await response.json();
@@ -437,7 +437,7 @@ class TradingMonitor {
         if (!this.charts.pnlChart) return;
         
         try {
-            const response = await fetch(`/api/chart/profit-trend?timeframe=${timeframe}`);
+            const response = await fetch(`${API_BASE_URL}/api/chart/profit-trend?timeframe=${timeframe}`);
             if (!response.ok) throw new Error('Failed to fetch P&L data');
             
             const data = await response.json();
@@ -478,7 +478,7 @@ class TradingMonitor {
         if (!this.charts.spreadChart) return;
         
         try {
-            const response = await fetch(`/api/chart/price-history?hours=${this.getHoursFromTimeframe(timeframe)}`);
+            const response = await fetch(`${API_BASE_URL}/api/chart/price-history?hours=${this.getHoursFromTimeframe(timeframe)}`);
             if (!response.ok) throw new Error('Failed to fetch spread data');
             
             const data = await response.json();
