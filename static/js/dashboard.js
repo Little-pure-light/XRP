@@ -389,7 +389,7 @@ class TradingDashboard {
         try {
             this.showLoading('start-trading-btn');
             
-            const response = await fetch('/api/start-trading', {
+            const response = await fetch(`${API_BASE_URL}/api/start-trading`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -419,7 +419,7 @@ class TradingDashboard {
         try {
             this.showLoading('stop-trading-btn');
             
-            const response = await fetch('/api/stop-trading', {
+            const response = await fetch(`${API_BASE_URL}/api/stop-trading`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
