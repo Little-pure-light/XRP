@@ -22,7 +22,7 @@ db = SQLAlchemy(model_class=Base)
 
 # Create the app
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "https://xrpbot.pages.dev"}})
+CORS(app)
 
 # Load configuration
 config_obj = get_config()
