@@ -1,5 +1,7 @@
 // XRP Arbitrage Trading System - Trading Monitor JavaScript
 
+const API_BASE_URL = "https://xrp-production-9caf.up.railway.app";
+
 class TradingMonitor {
     constructor() {
         this.feedUpdateInterval = null;
