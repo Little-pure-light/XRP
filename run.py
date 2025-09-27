@@ -23,7 +23,13 @@ if __name__ == '__main__':
         print("⚡ 按 Ctrl+C 停止服務")
         
         # 啟動Flask服務器
-        app.run(host='127.0.0.1', port=5000, debug=True)
+        from flask import jsonify
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok'}), 200
+
+app.run(host='0.0.0.0', port=5000, debug=True)
         
     except ImportError as e:
         print(f"❌ 導入錯誤: {e}")
@@ -38,7 +44,13 @@ if __name__ == '__main__':
             with app.app_context():
                 db.create_all()
             
-            app.run(host='127.0.0.1', port=5000, debug=True)
+            from flask import jsonify
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok'}), 200
+
+app.run(host='0.0.0.0', port=5000, debug=True)
         except Exception as fix_error:
             print(f"❌ 修復失敗: {fix_error}")
             print("請檢查代碼結構")
