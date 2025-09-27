@@ -1,9 +1,6 @@
 from app import app
 
-# 首頁測試用路由
-@app.route("/")
-def index():
-    return "✅ 系統已啟動，伺服器正常運行中！"
-
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # 本地開發時才啟動 Flask
+    # Railway 會用 Procfile 裡的 gunicorn 啟動，不需要這行
+    app.run(debug=True)
