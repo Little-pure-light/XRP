@@ -251,10 +251,16 @@
 
 
 <script>
-    // Initialize dashboard
     document.addEventListener('DOMContentLoaded', function() {
         initializeDashboard();
-        initializePriceChart();
+        if (typeof initializePriceChart === 'function') {
+            initializePriceChart();
+        } else {
+            console.error("initializePriceChart not ready yet");
+        }
+         });
+</script>
+
         
         // Start periodic updates
         setInterval(updatePrices, 2000);
