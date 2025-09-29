@@ -1,5 +1,14 @@
 // XRP Arbitrage Trading System - Charts JavaScript
-
+// 檢查 Chart.js 是否載入
+if (typeof Chart === 'undefined') {
+    console.error('Chart.js 未載入，請檢查 HTML 中的 script 標籤');
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            window.tradingCharts = new TradingCharts();
+        }, 100); // 延遲 100ms 確保載入
+    });
+} else {
+    // 原有初始化代碼繼續
 class TradingCharts {
     constructor() {
         this.charts = {};
