@@ -27,9 +27,7 @@ jobs:
     - name: 🚄 安裝Railway CLI
       run: npm install -g @railway/cli
       
-    - name: 🔐 Railway登錄
-      run: railway login --token ${{ secrets.RAILWAY_TOKEN }}
-      
+    
     - name: 🔗 鏈接Railway項目
       run: |
         if ! railway status > /dev/null 2>&1; then
