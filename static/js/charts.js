@@ -29,10 +29,17 @@ class TradingCharts {
         Chart.defaults.borderColor = this.chartColors.grid;
         Chart.defaults.backgroundColor = 'rgba(9, 105, 218, 0.1)';
         
-        Chart.defaults.scales.linear.grid.color = this.chartColors.grid;
-        Chart.defaults.scales.linear.ticks.color = this.chartColors.textMuted;
-        Chart.defaults.scales.time.grid.color = this.chartColors.grid;
-        Chart.defaults.scales.time.ticks.color = this.chartColors.textMuted;
+        Chart.defaults.scales = {
+    x: {
+        grid: { color: this.chartColors.grid },
+        ticks: { color: this.chartColors.textMuted }
+    },
+    y: {
+        grid: { color: this.chartColors.grid },
+        ticks: { color: this.chartColors.textMuted }
+    }
+};
+
         
         Chart.defaults.plugins.legend.labels.color = this.chartColors.text;
         Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(33, 38, 45, 0.9)';
