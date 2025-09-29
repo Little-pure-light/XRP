@@ -92,6 +92,7 @@ def simple_health():
     return "OK", 200
 
 @app.route('/')
+@app.route('/dashboard')
 def dashboard():
     """Main trading dashboard"""
     modules = get_core_modules()
