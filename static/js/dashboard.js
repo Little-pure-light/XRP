@@ -1,6 +1,5 @@
 // XRP Arbitrage Trading System - Dashboard JavaScript
 
-const response = await fetch(`${API_BASE_URL}/api/prices`);
 
 class TradingDashboard {
     constructor() {
