@@ -668,49 +668,33 @@ class TradingCharts {
     }
 }
 
-// Initialize global charts instance
-window.tradingCharts = new TradingCharts();
+// 初始化所有圖表功能（等畫面載入完成後才執行）
+document.addEventListener('DOMContentLoaded', () => {
+    window.tradingCharts = new TradingCharts();
 
-// Global functions for template usage
-window.initializePriceChart = () => {
-    return window.tradingCharts.initializePriceChart();
-};
+    // 給 HTML 使用的全局函數
+    window.initializePriceChart = () => window.tradingCharts.initializePriceChart();
+    window.initializePnlChart = () => window.tradingCharts.initializePnlChart();
+    window.initializeDistributionChart = () => window.tradingCharts.initializeDistributionChart();
+    window.initializeSpreadChart = () => window.tradingCharts.initializeSpreadChart();
 
-window.initializePnlChart = () => {
-    return window.tradingCharts.initializePnlChart();
-};
-
-window.initializeDistributionChart = () => {
-    return window.tradingCharts.initializeDistributionChart();
-};
-
-window.initializeSpreadChart = () => {
-    return window.tradingCharts.initializeSpreadChart();
-};
-
-window.updatePriceChart = (data) => {
-    window.tradingCharts.updatePriceChart(data);
-};
-
-// Chart update functions for monitor
-window.updatePnlChart = (timeframe) => {
-    if (window.tradingCharts.charts.pnlChart) {
-        window.tradingCharts.loadPnlHistory(timeframe);
-    }
-};
-
-window.updateDistributionChart = () => {
-    if (window.tradingCharts.charts.distributionChart) {
-        window.tradingCharts.loadDistributionData();
-    }
-};
-
-window.updateSpreadChart = (timeframe) => {
-    if (window.tradingCharts.charts.spreadChart) {
+    window.updatePriceChart = (data) => window.tradingCharts.updatePriceChart(data);
+    window.updatePnlChart = (timeframe) => {
+        if (window.tradingCharts.charts.pnlChart) {
+            window.tradingCharts.loadPnlHistory(timeframe);
+        }
+    };
+    window.updateDistributionChart = () => {
+        if (window.tradingCharts.charts.distributionChart) {
+            window.tradingCharts.loadDistributionData();
+        }
+    };
+    window.updateSpreadChart = (timeframe) => {
         const hours = timeframe === '1h' ? 1 : timeframe === '6h' ? 6 : timeframe === '24h' ? 24 : 6;
         window.tradingCharts.loadSpreadHistory(hours);
-    }
-};
+    };
+});
+
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
